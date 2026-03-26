@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+     	<html lang="pt-BR">
+     	<head>
+     	  <meta charset="UTF-8" />
+      	  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+     	  <meta name="theme-color" content="#16a34a" />
+  <meta name="description" content="ERB Ocorrências - Sistema de Registro de Ocorrências da Rodoviária do Plano Piloto" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="ERB Ocorrências" />
+  <title>ERB Ocorrências</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- jsPDF AutoTable -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash-screen">
+    <div class="splash-content">
+      <div class="splash-logo">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <h1>ERB Ocorrências</h1>
+      <p>Rodoviária do Plano Piloto</p>
+      <div class="splash-loader">
+        <div class="loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" style="display:none">
+    <div class="login-bg">
+      <div class="login-overlay"></div>
+      <div class="login-container">
+        <div class="login-header">
+          <div class="login-logo">
+            <i class="fas fa-shield-halved"></i>
+          </div>
+          <h1>ERB Ocorrências</h1>
+          <p>Rodoviária do Plano Piloto — Brasília</p>
+        </div>
+        <form class="login-form" id="login-form">
+          <div class="form-group">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Senha</label>
+            <div class="input-password">
+              <input type="password" id="login-senha" placeholder="••••••••" required autocomplete="current-password" />
+              <button type="button" class="toggle-password" onclick="togglePassword()">
+                <i class="fas fa-eye" id="eye-icon"></i>
+              </button>
+            </div>
+          </div>
+          <div id="login-error" class="login-error hidden">
+            <i class="fas fa-circle-exclamation"></i>
+            <span>Email ou senha incorretos.</span>
+          </div>
+          <button type="submit" class="btn-login" id="btn-login">
+            <span>Entrar no Sistema</span>
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </form>
+        <div class="login-footer">
+          <p>Acesso restrito a servidores autorizados</p>
+          <div class="login-demo-info">
+            <small><i class="fas fa-info-circle"></i> Demo: admin@erb.gov.br / admin123</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="app" style="display:none">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fas fa-shield-halved"></i>
+          <div class="sidebar-title">
+            <span class="sidebar-name">ERB Ocorrências</span>
+            <span class="sidebar-sub">Rodoviária PP</span>
+          </div>
+        </div>
+        <button class="sidebar-close" id="sidebar-close" onclick="closeSidebar()">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebar-avatar">A</div>
+        <div class="user-info">
+          <span class="user-name" id="sidebar-user-name">Usuário</span>
+          <span class="user-badge" id="sidebar-user-role">Fiscal</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+          <i class="fas fa-gauge-high"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="nova-ocorrencia" onclick="navigate('nova-ocorrencia')">
+          <i class="fas fa-plus-circle"></i>
+          <span>Registrar Ocorrência</span>
+        </a>
+        <a href="#" class="nav-item" data-page="ocorrencias" onclick="navigate('ocorrencias')">
+          <i class="fas fa-list-check"></i>
+          <span>Lista de Ocorrências</span>
+        </a>
+        <a href="#" class="nav-item" data-page="relatorios" onclick="navigate('relatorios')">
+          <i class="fas fa-file-chart-column"></i>
+          <span>Relatórios</span>
+        </a>
+        <div class="nav-divider"></div>
+        <a href="#" class="nav-item" data-page="admin" onclick="navigate('admin')" id="nav-admin">
+          <i class="fas fa-sliders"></i>
+          <span>Administração</span>
+        </a>
+        <a href="#" class="nav-item" data-page="configuracoes" onclick="navigate('configuracoes')">
+          <i class="fas fa-gear"></i>
+          <span>Configurações</span>
+        </a>
+        <a href="#" class="nav-item" data-page="logs" onclick="navigate('logs')" id="nav-logs">
+          <i class="fas fa-scroll"></i>
+          <span>Logs do Sistema</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="logout()">
+          <i class="fas fa-right-from-bracket"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- OVERLAY SIDEBAR (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-wrapper">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <button class="topbar-menu" onclick="openSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-actions">
+          <button class="topbar-btn" onclick="navigate('nova-ocorrencia')" title="Nova Ocorrência">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button class="topbar-btn" id="notif-btn" onclick="toggleNotifications()" title="Notificações">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+          </button>
+          <div class="topbar-avatar" id="topbar-avatar" onclick="navigate('configuracoes')">A</div>
+        </div>
+      </header>
+
+      <!-- NOTIFICATIONS PANEL -->
+      <div class="notifications-panel hidden" id="notifications-panel">
+        <div class="notif-header">
+          <span>Notificações</span>
+          <button onclick="markAllRead()"><i class="fas fa-check-double"></i> Marcar todas lidas</button>
+        </div>
+        <div class="notif-list" id="notif-list">
+          <div class="notif-empty"><i class="fas fa-bell-slash"></i><p>Nenhuma notificação</p></div>
+        </div>
+      </div>
+
+      <!-- PAGES -->
+      <main class="main-content" id="main-content">
+
+        <!-- DASHBOARD PAGE -->
+        <div class="page" id="page-dashboard">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Dashboard</h2>
+              <p class="page-subtitle" id="dashboard-date">Carregando...</p>
+            </div>
+            <div class="page-actions">
+              <select class="filter-select" id="dashboard-mes" onchange="loadDashboard()">
+                <option value="0">Janeiro</option>
+                <option value="1">Fevereiro</option>
+                <option value="2">Março</option>
+                <option value="3">Abril</option>
+                <option value="4">Maio</option>
+                <option value="5">Junho</option>
+                <option value="6">Julho</option>
+                <option value="7">Agosto</option>
+                <option value="8">Setembro</option>
+                <option value="9">Outubro</option>
+                <option value="10">Novembro</option>
+                <option value="11">Dezembro</option>
+              </select>
+              <select class="filter-select" id="dashboard-ano" onchange="loadDashboard()">
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STAT CARDS -->
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-card stat-total">
+              <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-total">0</span>
+                <span class="stat-label">Total no Mês</span>
+              </div>
+              <div class="stat-trend" id="stat-total-trend"></div>
+            </div>
+            <div class="stat-card stat-open">
+              <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-open">0</span>
+                <span class="stat-label">Em Aberto</span>
+              </div>
+            </div>
+            <div class="stat-card stat-progress">
+              <div class="stat-icon"><i class="fas fa-spinner"></i></div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-progress">0</span>
+                <span class="stat-label">Em Andamento</span>
+              </div>
+            </div>
+            <div class="stat-card stat-closed">
+              <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-closed">0</span>
+                <span class="stat-label">Encerradas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHARTS ROW -->
+          <div class="charts-row">
+            <div class="chart-card chart-wide">
+              <div class="chart-header">
+                <h3><i class="fas fa-chart-line"></i> Ocorrências por Dia</h3>
+              </div>
+              <div class="chart-body" style="height:280px;">
+                <canvas id="chart-daily"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-chart-pie"></i> Por Tipo</h3>
+              </div>
+              <div class="chart-body" style="height:280px;">
+                <canvas id="chart-tipo"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- SETOR CHART + RANKING -->
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-chart-bar"></i> Por Setor</h3>
+              </div>
+              <div class="chart-body" style="height:280px;">
+                <canvas id="chart-setor"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fas fa-ranking-star"></i> Ranking de Tipos</h3>
+              </div>
+              <div class="ranking-list" id="ranking-list">
+                <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECENT OCCURRENCES -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3><i class="fas fa-clock-rotate-left"></i> Ocorrências Recentes</h3>
+              <button class="btn-sm" onclick="navigate('ocorrencias')">Ver todas <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="recent-list" id="recent-list">
+              <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOVA OCORRÊNCIA PAGE -->
+        <div class="page" id="page-nova-ocorrencia">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Registrar Ocorrência</h2>
+              <p class="page-subtitle">Preencha todos os campos obrigatórios</p>
+            </div>
+          </div>
+          <div class="form-card">
+            <form id="form-ocorrencia" onsubmit="salvarOcorrencia(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label required">Número da Ocorrência</label>
+                  <input type="text" id="oc-numero" class="form-input" readonly placeholder="Gerado automaticamente" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Data e Hora</label>
+                  <input type="datetime-local" id="oc-datahora" class="form-input" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label required">Tipo de Ocorrência</label>
+                  <select id="oc-tipo" class="form-input" required>
+                    <option value="">Selecione o tipo...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Setor</label>
+                  <select id="oc-setor" class="form-input" required>
+                    <option value="">Selecione o setor...</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Local Específico</label>
+                <input type="text" id="oc-local" class="form-input" placeholder="Ex: Plataforma A, próximo ao guichê 5" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Descrição Detalhada</label>
+                <textarea id="oc-descricao" class="form-textarea" rows="5" placeholder="Descreva detalhadamente o que ocorreu..." required></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label required">Fiscal Responsável</label>
+                  <input type="text" id="oc-fiscal" class="form-input" readonly />
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Status</label>
+                  <select id="oc-status" class="form-input" required>
+                    <option value="aberta">Aberta</option>
+                    <option value="em_andamento">Em Andamento</option>
+                    <option value="encerrada">Encerrada</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Observações</label>
+                <textarea id="oc-observacoes" class="form-textarea" rows="3" placeholder="Observações adicionais..."></textarea>
+              </div>
+
+              <!-- UPLOAD DE FOTOS -->
+              <div class="form-group">
+                <label class="form-label">Fotos <span class="form-hint">(Máx. 5 fotos, JPG/PNG)</span></label>
+                <div class="upload-area" id="foto-upload-area" onclick="document.getElementById('foto-input').click()">
+                  <i class="fas fa-camera"></i>
+                  <span>Clique para anexar fotos</span>
+                  <small>ou arraste e solte aqui</small>
+                </div>
+                <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="handleFotos(event)" />
+                <div class="fotos-preview" id="fotos-preview"></div>
+              </div>
+
+              <!-- UPLOAD DE DOCUMENTOS -->
+              <div class="form-group">
+                <label class="form-label">Documentos <span class="form-hint">(PDF, DOC, máx. 10MB)</span></label>
+                <div class="upload-area" id="doc-upload-area" onclick="document.getElementById('doc-input').click()">
+                  <i class="fas fa-file-arrow-up"></i>
+                  <span>Clique para anexar documentos</span>
+                </div>
+                <input type="file" id="doc-input" accept=".pdf,.doc,.docx" multiple style="display:none" onchange="handleDocs(event)" />
+                <div class="docs-list" id="docs-list"></div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="limparFormulario()">
+                  <i class="fas fa-eraser"></i> Limpar
+                </button>
+                <button type="submit" class="btn btn-primary" id="btn-salvar-oc">
+                  <i class="fas fa-floppy-disk"></i> Salvar Ocorrência
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- LISTA DE OCORRÊNCIAS PAGE -->
+        <div class="page" id="page-ocorrencias">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Ocorrências</h2>
+              <p class="page-subtitle" id="lista-count">Carregando...</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="navigate('nova-ocorrencia')">
+                <i class="fas fa-plus"></i> Nova
+              </button>
+            </div>
+          </div>
+
+          <!-- FILTROS -->
+          <div class="filters-card">
+            <div class="filters-row">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="busca-texto" placeholder="Buscar ocorrências..." oninput="filtrarOcorrencias()" />
+              </div>
+              <select class="filter-select" id="filtro-tipo" onchange="filtrarOcorrencias()">
+                <option value="">Todos os Tipos</option>
+              </select>
+              <select class="filter-select" id="filtro-setor" onchange="filtrarOcorrencias()">
+                <option value="">Todos os Setores</option>
+              </select>
+              <select class="filter-select" id="filtro-status" onchange="filtrarOcorrencias()">
+                <option value="">Todos os Status</option>
+                <option value="aberta">Aberta</option>
+                <option value="em_andamento">Em Andamento</option>
+                <option value="encerrada">Encerrada</option>
+              </select>
+            </div>
+            <div class="filters-row">
+              <div class="form-group-inline">
+                <label>De:</label>
+                <input type="date" id="filtro-data-inicio" class="filter-input" onchange="filtrarOcorrencias()" />
+              </div>
+              <div class="form-group-inline">
+                <label>Até:</label>
+                <input type="date" id="filtro-data-fim" class="filter-input" onchange="filtrarOcorrencias()" />
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="limparFiltros()">
+                <i class="fas fa-filter-circle-xmark"></i> Limpar Filtros
+              </button>
+              <select class="filter-select" id="filtro-ordem" onchange="filtrarOcorrencias()">
+                <option value="desc">Mais Recente</option>
+                <option value="asc">Mais Antigo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- LISTA -->
+          <div class="ocorrencias-list" id="ocorrencias-list">
+            <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i> Carregando...</div>
+          </div>
+
+          <!-- PAGINAÇÃO -->
+          <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- DETALHES OCORRÊNCIA PAGE -->
+        <div class="page" id="page-detalhes">
+          <div class="page-header">
+            <div class="page-header-back">
+              <button class="btn-back" onclick="navigate('ocorrencias')">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div>
+                <h2 class="page-title" id="detalhe-titulo">Detalhes da Ocorrência</h2>
+                <p class="page-subtitle" id="detalhe-numero">Carregando...</p>
+              </div>
+            </div>
+            <div class="page-actions" id="detalhe-actions">
+              <button class="btn btn-secondary" onclick="editarOcorrencia()">
+                <i class="fas fa-pen"></i> Editar
+              </button>
+              <button class="btn btn-primary" onclick="gerarPDFOcorrencia()">
+                <i class="fas fa-file-pdf"></i> PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="detalhe-grid" id="detalhe-content">
+            <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>
+          </div>
+        </div>
+
+        <!-- RELATÓRIOS PAGE -->
+        <div class="page" id="page-relatorios">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Relatórios</h2>
+              <p class="page-subtitle">Gere e exporte relatórios do sistema</p>
+            </div>
+          </div>
+
+          <div class="relatorios-grid">
+            <!-- GERADOR RÁPIDO -->
+            <div class="relatorio-card">
+              <div class="relatorio-icon"><i class="fas fa-file-chart-column"></i></div>
+              <h3>Relatório Mensal</h3>
+              <p>Gere o relatório completo do mês selecionado</p>
+              <div class="relatorio-form">
+                <select id="rel-mes" class="form-input">
+                  <option value="0">Janeiro</option>
+                  <option value="1">Fevereiro</option>
+                  <option value="2" selected>Março</option>
+                  <option value="3">Abril</option>
+                  <option value="4">Maio</option>
+                  <option value="5">Junho</option>
+                  <option value="6">Julho</option>
+                  <option value="7">Agosto</option>
+                  <option value="8">Setembro</option>
+                  <option value="9">Outubro</option>
+                  <option value="10">Novembro</option>
+                  <option value="11">Dezembro</option>
+                </select>
+                <select id="rel-ano" class="form-input">
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="relatorio-btns">
+                <button class="btn btn-primary" onclick="gerarRelatorioMensal('pdf')">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-success" onclick="gerarRelatorioMensal('excel')">
+                  <i class="fas fa-file-excel"></i> Excel
+                </button>
+              </div>
+            </div>
+
+            <!-- RELATÓRIO POR PERÍODO -->
+            <div class="relatorio-card">
+              <div class="relatorio-icon"><i class="fas fa-calendar-range"></i></div>
+              <h3>Relatório por Período</h3>
+              <p>Defina um intervalo de datas personalizado</p>
+              <div class="relatorio-form">
+                <div class="form-group-inline">
+                  <label>De:</label>
+                  <input type="date" id="rel-inicio" class="filter-input" />
+                </div>
+                <div class="form-group-inline">
+                  <label>Até:</label>
+                  <input type="date" id="rel-fim" class="filter-input" />
+                </div>
+              </div>
+              <div class="relatorio-btns">
+                <button class="btn btn-primary" onclick="gerarRelatorioPeriodo('pdf')">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-success" onclick="gerarRelatorioPeriodo('excel')">
+                  <i class="fas fa-file-excel"></i> Excel
+                </button>
+              </div>
+            </div>
+
+            <!-- RELATÓRIO POR TIPO -->
+            <div class="relatorio-card">
+              <div class="relatorio-icon"><i class="fas fa-tags"></i></div>
+              <h3>Relatório por Tipo</h3>
+              <p>Filtre por tipo específico de ocorrência</p>
+              <div class="relatorio-form">
+                <select id="rel-tipo" class="form-input">
+                  <option value="">Todos os Tipos</option>
+                </select>
+                <select id="rel-tipo-ano" class="form-input">
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                </select>
+              </div>
+              <div class="relatorio-btns">
+                <button class="btn btn-primary" onclick="gerarRelatorioTipo('pdf')">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-success" onclick="gerarRelatorioTipo('excel')">
+                  <i class="fas fa-file-excel"></i> Excel
+                </button>
+              </div>
+            </div>
+
+            <!-- RELATÓRIO COMPLETO -->
+            <div class="relatorio-card">
+              <div class="relatorio-icon"><i class="fas fa-database"></i></div>
+              <h3>Exportar Tudo</h3>
+              <p>Exporte todas as ocorrências registradas</p>
+              <div class="relatorio-form">
+                <p class="rel-info"><i class="fas fa-info-circle"></i> Exporta todas as ocorrências do sistema</p>
+              </div>
+              <div class="relatorio-btns">
+                <button class="btn btn-primary" onclick="exportarTudo('pdf')">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-success" onclick="exportarTudo('excel')">
+                  <i class="fas fa-file-excel"></i> Excel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PREVIEW RELATÓRIO -->
+          <div class="relatorio-preview" id="relatorio-preview" style="display:none">
+            <div class="chart-header">
+              <h3><i class="fas fa-table"></i> Pré-visualização</h3>
+              <button class="btn btn-secondary btn-sm" onclick="document.getElementById('relatorio-preview').style.display='none'">
+                <i class="fas fa-xmark"></i> Fechar
+              </button>
+            </div>
+            <div id="preview-content"></div>
+          </div>
+        </div>
+
+        <!-- ADMINISTRAÇÃO PAGE -->
+        <div class="page" id="page-admin">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Administração</h2>
+              <p class="page-subtitle">Gerencie usuários, tipos e setores</p>
+            </div>
+          </div>
+
+          <div class="admin-tabs">
+            <button class="admin-tab active" id="atab-usuarios" onclick="switchAdminTab('usuarios', this)">
+              <i class="fas fa-users"></i> Usuários
+            </button>
+            <button class="admin-tab" id="atab-tipos" onclick="switchAdminTab('tipos', this)">
+              <i class="fas fa-tags"></i> Tipos de Ocorrência
+            </button>
+            <button class="admin-tab" id="atab-setores-admin" onclick="switchAdminTab('setores-admin', this)">
+              <i class="fas fa-map-marker-alt"></i> Setores
+            </button>
+          </div>
+
+          <!-- USUARIOS TAB -->
+          <div class="admin-tab-content active" id="tab-usuarios">
+            <div class="admin-toolbar">
+              <h3>Usuários do Sistema</h3>
+              <button class="btn btn-primary" onclick="abrirModalUsuario()">
+                <i class="fas fa-plus"></i> Novo Usuário
+              </button>
+            </div>
+            <div class="table-wrapper">
+              <table class="admin-table" id="tabela-usuarios">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Perfil</th>
+                    <th>Setor</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-usuarios">
+                  <tr><td colspan="6" class="loading-cell"><i class="fas fa-circle-notch fa-spin"></i> Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TIPOS TAB -->
+          <div class="admin-tab-content" id="tab-tipos">
+            <div class="admin-toolbar">
+              <h3>Tipos de Ocorrência</h3>
+              <button class="btn btn-primary" onclick="abrirModalTipo()">
+                <i class="fas fa-plus"></i> Novo Tipo
+              </button>
+            </div>
+            <div class="tipos-grid" id="tipos-grid">
+              <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>
+            </div>
+          </div>
+
+          <!-- SETORES TAB -->
+          <div class="admin-tab-content" id="tab-setores-admin">
+            <div class="admin-toolbar">
+              <h3>Setores</h3>
+              <button class="btn btn-primary" onclick="abrirModalSetor()">
+                <i class="fas fa-plus"></i> Novo Setor
+              </button>
+            </div>
+            <div class="table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-setores">
+                  <tr><td colspan="4" class="loading-cell"><i class="fas fa-circle-notch fa-spin"></i> Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONFIGURAÇÕES PAGE -->
+        <div class="page" id="page-configuracoes">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Configurações</h2>
+              <p class="page-subtitle">Gerencie seu perfil e preferências</p>
+            </div>
+          </div>
+          <div class="config-grid">
+            <!-- PERFIL -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-user-circle"></i>
+                <h3>Meu Perfil</h3>
+              </div>
+              <div class="config-avatar-section">
+                <div class="config-avatar" id="config-avatar">A</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" id="config-nome" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="config-email" class="form-input" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Setor</label>
+                <input type="text" id="config-setor" class="form-input" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nível de Acesso</label>
+                <input type="text" id="config-perfil" class="form-input" readonly />
+              </div>
+              <button class="btn btn-primary" onclick="salvarPerfil()">
+                <i class="fas fa-floppy-disk"></i> Salvar Alterações
+              </button>
+            </div>
+
+            <!-- SEGURANÇA -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-shield-halved"></i>
+                <h3>Segurança</h3>
+              </div>
+              <form onsubmit="alterarSenha();return false;" autocomplete="new-password">
+              <div class="form-group">
+                <label class="form-label">Senha Atual</label>
+                <input type="password" id="config-senha-atual" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nova Senha</label>
+                <input type="password" id="config-senha-nova" class="form-input" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirmar Senha</label>
+                <input type="password" id="config-senha-confirmar" class="form-input" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-key"></i> Alterar Senha
+              </button>
+              </form>
+            </div>
+
+            <!-- NOTIFICAÇÕES -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-bell"></i>
+                <h3>Notificações</h3>
+              </div>
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span>Novas Ocorrências</span>
+                  <small>Notificar ao registrar nova ocorrência</small>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="notif-novas" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span>Ocorrências Abertas</span>
+                  <small>Alerta de ocorrências pendentes</small>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="notif-abertas" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span>Push Notifications</span>
+                  <small>Notificações do navegador</small>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="notif-push" onchange="togglePushNotif(this)" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- SISTEMA -->
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-gear"></i>
+                <h3>Sistema</h3>
+              </div>
+              <div class="system-info">
+                <div class="sys-item">
+                  <span>Versão</span>
+                  <strong>1.0.0</strong>
+                </div>
+                <div class="sys-item">
+                  <span>Status</span>
+                  <span class="badge-online"><i class="fas fa-circle"></i> Online</span>
+                </div>
+                <div class="sys-item">
+                  <span>PWA</span>
+                  <strong id="pwa-status">Verificando...</strong>
+                </div>
+                <div class="sys-item">
+                  <span>Último Sync</span>
+                  <strong id="last-sync">--</strong>
+                </div>
+              </div>
+              <button class="btn btn-secondary" onclick="limparCache()">
+                <i class="fas fa-trash-can"></i> Limpar Cache
+              </button>
+              <button class="btn btn-secondary" style="margin-top:8px" onclick="exportarBackup()">
+                <i class="fas fa-cloud-arrow-down"></i> Exportar Backup
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOGS PAGE -->
+        <div class="page" id="page-logs">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Logs do Sistema</h2>
+              <p class="page-subtitle">Histórico de todas as ações</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary" onclick="exportarLogs()">
+                <i class="fas fa-file-excel"></i> Exportar
+              </button>
+            </div>
+          </div>
+          <div class="filters-card">
+            <div class="filters-row">
+              <input type="text" class="search-input" id="logs-busca" placeholder="Buscar nos logs..." oninput="filtrarLogs()" />
+              <select class="filter-select" id="logs-tipo-filtro" onchange="filtrarLogs()">
+                <option value="">Todas as ações</option>
+                <option value="LOGIN">Login</option>
+                <option value="LOGOUT">Logout</option>
+                <option value="CRIAR">Criação</option>
+                <option value="EDITAR">Edição</option>
+                <option value="EXCLUIR">Exclusão</option>
+              </select>
+            </div>
+          </div>
+          <div class="logs-list" id="logs-list">
+            <div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i> Carregando logs...</div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL GENÉRICO -->
+  <div class="modal-overlay hidden" id="modal-overlay" onclick="fecharModal(event)">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal</h3>
+        <button class="modal-close" onclick="fecharModal()"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- OFFLINE BANNER -->
+  <div class="offline-banner hidden" id="offline-banner">
+    <i class="fas fa-wifi-slash"></i>
+    <span>Sem conexão — modo offline ativo</span>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/ocorrencias.js"></script>
+  <script src="js/relatorios.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/pwa.js"></script>
+</body>
+</html>
