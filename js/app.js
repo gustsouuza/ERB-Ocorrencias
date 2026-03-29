@@ -177,6 +177,7 @@ function navegar(pagina, dados) {
   var isFiscal = perfil === 'fiscal';
   var paginasRestritas = ['dashboard','ocorrencias','relatorios','admin','configuracoes','logs'];
   if (isFiscal && paginasRestritas.indexOf(pagina) !== -1) {
+    showToast('Acesso não permitido para o seu perfil', 'error');
     return;
   }
   ERB.paginaAtual = pagina;
