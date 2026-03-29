@@ -578,8 +578,9 @@ function mostrarDetalhes(oc) {
   var ativo = oc.status === s;
   if (!ativo && oc.status === 'encerrada') return '';
   return '<button onclick="alterarStatus(\'' + oc.id + '\',\'' + s + '\')" ' +
-    'class="btn ' + (ativo ? 'btn-primary' : 'btn-secondary') + '" ' +
-    'style="justify-content:flex-start;gap:10px">' +
+  'class="btn ' + (ativo ? 'btn-primary' : 'btn-secondary') + '" ' +
+  (ativo || oc.status === 'encerrada' ? 'disabled ' : '') +
+  'style="justify-content:flex-start;gap:10px">' +
     statusBadge(s) +
     (ativo ? '<i class="fas fa-check" style="margin-left:auto;color:var(--green-600)"></i>' : '') +
     '</button>';
@@ -628,6 +629,7 @@ function editarOcorrencia() {
 function alterarStatus(id, novoStatus) {
   var oc = ERB.ocorrencias.find(function(o) { return o.id === id; }) || ERB.ocorrenciaDetalhe;
   if (!oc) { showToast('Ocorrência não encontrada', 'error'); return; }
+  
 
   var historico = Array.isArray(oc.historico) ? oc.historico.slice() : [];
   historico.push({
