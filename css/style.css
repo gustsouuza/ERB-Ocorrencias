@@ -1353,6 +1353,102 @@ img { max-width: 100%; display: block; }
 }
 
 
+/* ======================================================
+   RESPONSIVIDADE MOBILE — correções
+   ====================================================== */
+@media (max-width: 768px) {
+
+  /* Dashboard — filtros de mês/ano */
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .page-actions .filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* Stats cards — 2 colunas no mobile */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .stat-value { font-size: 1.5rem; }
+
+  /* Gráficos — sem overflow */
+  .charts-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .chart-body {
+    overflow: hidden;
+  }
+  .chart-body canvas {
+    max-width: 100% !important;
+  }
+
+  /* Conteúdo principal sem padding excessivo */
+  .main-content {
+    padding: 12px;
+    overflow-x: hidden;
+  }
+
+  /* Detalhe grid — coluna única no mobile */
+  .detalhe-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Formulário — campos em coluna única */
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Topbar */
+  .topbar {
+    padding: 0 12px;
+  }
+  .topbar-title {
+    font-size: .9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stat-label {
+    font-size: .7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Remove sobreposição do pseudo-elemento */
+  .stat-card::after {
+    display: none;
+  }
+
+  /* Garante que o main-content não bloqueie cliques */
+  .main-content {
+    pointer-events: auto;
+  }
+}
 
 /* ======================================================
    PRINT
