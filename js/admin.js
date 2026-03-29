@@ -4,11 +4,19 @@
    ============================================ */
 
 function carregarAdmin() {
-  if (!ERB.usuario || ERB.usuario.perfil !== 'administrador') {
+  var perfil = ERB.usuario ? ERB.usuario.perfil : '';
+  var isAdmin = perfil === 'administrador';
+  var isSuper = isAdmin || perfil === 'supervisor' || perfil === 'cco';
+  if (!isSuper) {
     navegar('dashboard');
-    showToast('Acesso restrito a administradores', 'error');
+    showToast('Acesso restrito', 'error');
     return;
   }
+  // Aba de usuários visível só para administrador
+  var tabUsuarios = document.getElementById('atab-usuarios');
+  var contentUsuarios = document.getElementById('tab-usuarios');
+  if (tabUsuarios)     tabUsuarios.style.display     = isAdmin ? '' : 'none';
+  if (contentUsuarios) contentUsuarios.style.display = isAdmin ? '' : 'none';
 
   // Ativar a primeira aba
   switchAdminTab('usuarios', document.getElementById('atab-usuarios'));
@@ -129,6 +137,7 @@ function abrirModalUsuario(uid) {
         '<label class="form-label required">Perfil</label>' +
         '<select id="mu-perfil" class="form-input">' +
           '<option value="fiscal"'        + (u && u.perfil === 'fiscal'         ? ' selected' : '') + '>Fiscal</option>' +
+          '<option value="cco"'           + (u && u.perfil === 'cco'            ? ' selected' : '') + '>CCO</option>' +
           '<option value="supervisor"'    + (u && u.perfil === 'supervisor'     ? ' selected' : '') + '>Supervisor</option>' +
           '<option value="administrador"' + (u && u.perfil === 'administrador'  ? ' selected' : '') + '>Administrador</option>' +
         '</select>' +
@@ -162,7 +171,7 @@ function salvarUsuario(uid) {
   if (!uid && senha.length < 6) { showToast('Senha deve ter mínimo 6 caracteres', 'error'); return; }
 
   var payload = { nome: nome, email: email, perfil: perfil, setor: setor, ativo: true };
-  if (senha) payload.senha_hash = senha;
+  if (senha) payload.senha = senha;
 
   var url    = uid ? 'tables/usuarios/' + uid : 'tables/usuarios';
   var method = uid ? 'PATCH' : 'POST';

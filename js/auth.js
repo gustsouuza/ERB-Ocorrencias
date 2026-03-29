@@ -36,17 +36,22 @@ function fazerLogin() {
       var lista   = res.data || [];
       var usuario = lista[0] || null;
  
-      // Usuário não encontrado
+      // Usuário não encontrado no Supabase — tentar localStorage
+      if (!usuario) {
+        try {
+          var local = JSON.parse(localStorage.getItem('erb_usuarios_local') || '[]');
+          usuario = local.find(function(u) {
+            return u.email && u.email.toLowerCase() === email && u.ativo !== false;
+          }) || null;
+        } catch(e) { usuario = null; }
+      }
       if (!usuario) {
         mostrarErroLogin('Email ou senha incorretos.');
         resetarBotaoLogin();
         return;
       }
  
-      // Verificar senha
-      // O sistema atual armazena senha em texto puro.
-      // Quando migrar para bcrypt, substitua esta linha pela
-      // comparação de hash.
+      // Verificar senha (campo 'senha' — texto puro)
       if (usuario.senha !== senha) {
         mostrarErroLogin('Email ou senha incorretos.');
         resetarBotaoLogin();

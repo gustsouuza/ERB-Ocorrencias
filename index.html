@@ -923,7 +923,7 @@
 
   <!-- MODAL GENÉRICO -->
   <div class="modal-overlay hidden" id="modal-overlay" onclick="fecharModal(event)">
-    <div class="modal" id="modal">
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 id="modal-title">Modal</h3>
         <button class="modal-close" onclick="fecharModal()"><i class="fas fa-xmark"></i></button>

@@ -63,13 +63,14 @@ function mostrarTela(id) {
 function iniciarApp() {
   mostrarTela('app');
   // Carregar tipos e setores e depois iniciar UI
+  var paginaInicial = (ERB.usuario && ERB.usuario.perfil === 'fiscal') ? 'nova-ocorrencia' : 'dashboard';
   Promise.all([carregarTipos(), carregarSetores()]).then(function() {
     atualizarUIUsuario();
-    navegar('dashboard');
+    navegar(paginaInicial);
     setTimeout(checkNotificacoes, 3000);
   }).catch(function() {
     atualizarUIUsuario();
-    navegar('dashboard');
+    navegar(paginaInicial);
     setTimeout(checkNotificacoes, 3000);
   });
 }
@@ -172,6 +173,12 @@ function popularSelectSetores(selectId, selecionado) {
 
 // ============ NAVEGAÇÃO ============
 function navegar(pagina, dados) {
+  var perfil = ERB.usuario ? ERB.usuario.perfil : '';
+  var isFiscal = perfil === 'fiscal';
+  var paginasRestritas = ['dashboard','ocorrencias','relatorios','admin','configuracoes','logs'];
+  if (isFiscal && paginasRestritas.indexOf(pagina) !== -1) {
+    return;
+  }
   ERB.paginaAtual = pagina;
 
   // Atualizar nav
@@ -254,12 +261,23 @@ function atualizarUIUsuario() {
   if (sRole)   sRole.textContent   = u.perfil || 'Fiscal';
   if (tAvatar) tAvatar.textContent = inicial;
 
-  var navAdmin = document.getElementById('nav-admin');
-  var navLogs  = document.getElementById('nav-logs');
   var isAdmin  = u.perfil === 'administrador';
-  var isSuper  = isAdmin || u.perfil === 'supervisor';
-  if (navAdmin) navAdmin.style.display = isAdmin ? '' : 'none';
-  if (navLogs)  navLogs.style.display  = isSuper ? '' : 'none';
+  var isSuper  = isAdmin || u.perfil === 'supervisor' || u.perfil === 'cco';
+  var isFiscal = u.perfil === 'fiscal';
+
+  var navDashboard   = document.querySelector('[data-page="dashboard"]');
+  var navOcorrencias = document.querySelector('[data-page="ocorrencias"]');
+  var navRelatorios  = document.querySelector('[data-page="relatorios"]');
+  var navAdmin       = document.getElementById('nav-admin');
+  var navLogs        = document.getElementById('nav-logs');
+  var navConfig      = document.querySelector('[data-page="configuracoes"]');
+
+  if (navDashboard)   navDashboard.style.display   = isFiscal ? 'none' : '';
+  if (navOcorrencias) navOcorrencias.style.display = isFiscal ? 'none' : '';
+  if (navRelatorios)  navRelatorios.style.display  = isFiscal ? 'none' : '';
+  if (navAdmin)       navAdmin.style.display       = isSuper  ? '' : 'none';
+  if (navLogs)        navLogs.style.display        = isSuper  ? '' : 'none';
+  if (navConfig)      navConfig.style.display      = isFiscal ? 'none' : '';
 }
 
 // ============ HELPERS ============
