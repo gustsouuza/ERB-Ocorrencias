@@ -464,16 +464,17 @@ function verDetalhes(id) {
   }
 
   // Buscar na API
-  fetch('tables/ocorrencias/' + id)
-    .then(function(r) { return r.json(); })
-    .then(function(oc) {
-      if (!oc || !oc.id) throw new Error('Não encontrado');
-      mostrarDetalhes(oc);
-    })
-    .catch(function() {
-      if (contentEl) contentEl.innerHTML = '<div class="empty-state">' +
-        '<i class="fas fa-exclamation-triangle"></i><p>Ocorrência não encontrada</p></div>';
-    });
+fetch('tables/ocorrencias?id=' + id)
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    var oc = (res.data || [])[0];
+    if (!oc || !oc.id) throw new Error('Não encontrado');
+    mostrarDetalhes(oc);
+  })
+  .catch(function() {
+    if (contentEl) contentEl.innerHTML = '<div class="empty-state">' +
+      '<i class="fas fa-exclamation-triangle"></i><p>Ocorrência não encontrada</p></div>';
+  });
 }
 
 function verDetalhe(id) { verDetalhes(id); }
@@ -574,14 +575,15 @@ function mostrarDetalhes(oc) {
       '<h4 class="detalhe-section-title"><i class="fas fa-tags"></i> Alterar Status</h4>' +
       '<div style="display:flex;flex-direction:column;gap:8px">' +
         ['aberta','em_andamento','encerrada'].map(function(s) {
-          var ativo = oc.status === s;
-          return '<button onclick="alterarStatus(\'' + oc.id + '\',\'' + s + '\')" ' +
-            'class="btn ' + (ativo ? 'btn-primary' : 'btn-secondary') + '" ' +
-            'style="justify-content:flex-start;gap:10px">' +
-            statusBadge(s) +
-            (ativo ? '<i class="fas fa-check" style="margin-left:auto;color:var(--green-600)"></i>' : '') +
-            '</button>';
-        }).join('') +
+  var ativo = oc.status === s;
+  if (!ativo && oc.status === 'encerrada') return '';
+  return '<button onclick="alterarStatus(\'' + oc.id + '\',\'' + s + '\')" ' +
+    'class="btn ' + (ativo ? 'btn-primary' : 'btn-secondary') + '" ' +
+    'style="justify-content:flex-start;gap:10px">' +
+    statusBadge(s) +
+    (ativo ? '<i class="fas fa-check" style="margin-left:auto;color:var(--green-600)"></i>' : '') +
+    '</button>';
+  }).join('') +
       '</div>' +
     '</div>' +
 
@@ -611,7 +613,7 @@ function mostrarDetalhes(oc) {
 function detalheRow(label, value) {
   return '<div class="detail-row">' +
     '<span class="detail-label">' + label + '</span>' +
-    '<span class="detail-value">' + value + '</span>' +
+    '<span class="detail-value">' + (value || '--') + '</span>' +
     '</div>';
 }
 
@@ -629,17 +631,20 @@ function alterarStatus(id, novoStatus) {
 
   var historico = Array.isArray(oc.historico) ? oc.historico.slice() : [];
   historico.push({
-    acao:    'Status alterado para "' + novoStatus + '" por ' + (ERB.usuario ? ERB.usuario.nome : 'usuário'),
-    data:    new Date().toISOString(),
-    usuario: ERB.usuario ? ERB.usuario.nome : ''
+    acao:     'Status alterado para "' + novoStatus + '" por ' + (ERB.usuario ? ERB.usuario.nome : 'usuário'),
+    data:     new Date().toISOString(),
+    usuario:  ERB.usuario ? ERB.usuario.nome : ''
   });
 
-  fetch('tables/ocorrencias/' + id, {
-    method:  'PATCH',
+  fetch('tables/ocorrencias', {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ status: novoStatus, historico: historico })
+    body: JSON.stringify({ id: id, status: novoStatus, historico: historico })
   })
-  .then(function() {
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (!res.success) { showToast('Erro ao alterar status', 'error'); return; }
+
     // Atualizar cache local
     var idx = ERB.ocorrencias.findIndex(function(o) { return o.id === id; });
     if (idx >= 0) {
@@ -650,6 +655,7 @@ function alterarStatus(id, novoStatus) {
       ERB.ocorrenciaDetalhe.status   = novoStatus;
       ERB.ocorrenciaDetalhe.historico = historico;
     }
+
     showToast('Status alterado para "' + novoStatus + '"', 'success');
     registrarLog('EDITAR', 'Status da ocorrência ' + (oc.numero || id) + ' → ' + novoStatus);
     verDetalhes(id);

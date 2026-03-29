@@ -1304,6 +1304,56 @@ img { max-width: 100%; display: block; }
   .form-actions .btn { width: 100%; justify-content: center; }
 }
 
+
+/* ======================================================
+   DETALHE ROW — correção de espaçamento
+   ====================================================== */
+.detail-row {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--gray-100);
+  font-size: .875rem;
+}
+.detail-label {
+  color: var(--white-500);
+  min-width: 120px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+.detail-value {
+  color: var(--white-800);
+  font-weight: 600;
+}
+
+/* ======================================================
+   DETALHE GRID — espaçamento entre cards
+   ====================================================== */
+.detalhe-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.detalhe-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detalhe-card {
+  margin-bottom: 0;
+}
+
+.detalhe-section-title {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--gray-700);
+  margin-bottom: 14px;
+}
+
+
+
 /* ======================================================
    PRINT
    ====================================================== */

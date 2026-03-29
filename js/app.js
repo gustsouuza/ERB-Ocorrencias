@@ -282,7 +282,7 @@ function getTipoIcone(nome) {
 function statusBadge(status) {
   var map = {
     aberta:       '<span class="status-badge status-aberta"><i class="fas fa-circle-dot"></i> Aberta</span>',
-    em_andamento: '<span class="status-badge status-em_andamento"><i class="fas fa-spinner fa-spin"></i> Em Andamento</span>',
+    em_andamento: '<span class="status-badge status-em_andamento"><i class="fas fa-circle-half-stroke"></i> Em Andamento</span>',
     encerrada:    '<span class="status-badge status-encerrada"><i class="fas fa-circle-check"></i> Encerrada</span>'
   };
   return map[status] || '<span class="status-badge">' + (status || '--') + '</span>';
