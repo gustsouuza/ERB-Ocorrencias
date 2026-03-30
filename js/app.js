@@ -173,10 +173,17 @@ function popularSelectSetores(selectId, selecionado) {
 
 // ============ NAVEGAÇÃO ============
 function navegar(pagina, dados) {
+  // Controle de acesso por perfil
   var perfil = ERB.usuario ? ERB.usuario.perfil : '';
   var isFiscal = perfil === 'fiscal';
-  var paginasRestritas = ['dashboard','ocorrencias','relatorios','admin','configuracoes','logs'];
-  if (isFiscal && paginasRestritas.indexOf(pagina) !== -1) {
+  var isAdmin  = perfil === 'administrador';
+  var paginasRestritasFiscal = ['dashboard','ocorrencias','relatorios','admin','configuracoes','logs'];
+  var paginasRestritasNaoAdmin = ['admin'];
+  if (!isAdmin && paginasRestritasNaoAdmin.indexOf(pagina) !== -1) {
+    showToast('Acesso restrito a administradores', 'error');
+    return;
+  }
+  if (isFiscal && paginasRestritasFiscal.indexOf(pagina) !== -1) {
     showToast('Acesso não permitido para o seu perfil', 'error');
     return;
   }
@@ -266,17 +273,18 @@ function atualizarUIUsuario() {
   var isSuper  = isAdmin || u.perfil === 'supervisor' || u.perfil === 'cco';
   var isFiscal = u.perfil === 'fiscal';
 
-  var navDashboard   = document.querySelector('[data-page="dashboard"]');
+  // Visibilidade dos itens do menu
+  var navDashboard  = document.querySelector('[data-page="dashboard"]');
   var navOcorrencias = document.querySelector('[data-page="ocorrencias"]');
-  var navRelatorios  = document.querySelector('[data-page="relatorios"]');
-  var navAdmin       = document.getElementById('nav-admin');
-  var navLogs        = document.getElementById('nav-logs');
-  var navConfig      = document.querySelector('[data-page="configuracoes"]');
+  var navRelatorios = document.querySelector('[data-page="relatorios"]');
+  var navAdmin      = document.getElementById('nav-admin');
+  var navLogs       = document.getElementById('nav-logs');
+  var navConfig     = document.querySelector('[data-page="configuracoes"]');
 
   if (navDashboard)   navDashboard.style.display   = isFiscal ? 'none' : '';
   if (navOcorrencias) navOcorrencias.style.display = isFiscal ? 'none' : '';
   if (navRelatorios)  navRelatorios.style.display  = isFiscal ? 'none' : '';
-  if (navAdmin)       navAdmin.style.display       = isSuper  ? '' : 'none';
+  if (navAdmin)       navAdmin.style.display       = isAdmin  ? '' : 'none';
   if (navLogs)        navLogs.style.display        = isSuper  ? '' : 'none';
   if (navConfig)      navConfig.style.display      = isFiscal ? 'none' : '';
 }

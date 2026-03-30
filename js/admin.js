@@ -6,16 +6,15 @@
 function carregarAdmin() {
   var perfil = ERB.usuario ? ERB.usuario.perfil : '';
   var isAdmin = perfil === 'administrador';
-  var isSuper = isAdmin || perfil === 'supervisor' || perfil === 'cco';
-  if (!isSuper) {
+  if (!isAdmin) {
     navegar('dashboard');
-    showToast('Acesso restrito', 'error');
+    showToast('Acesso restrito a administradores', 'error');
     return;
   }
   // Aba de usuários visível só para administrador
   var tabUsuarios = document.getElementById('atab-usuarios');
   var contentUsuarios = document.getElementById('tab-usuarios');
-  if (tabUsuarios)     tabUsuarios.style.display     = isAdmin ? '' : 'none';
+  if (tabUsuarios)    tabUsuarios.style.display    = isAdmin ? '' : 'none';
   if (contentUsuarios) contentUsuarios.style.display = isAdmin ? '' : 'none';
 
   // Ativar a primeira aba

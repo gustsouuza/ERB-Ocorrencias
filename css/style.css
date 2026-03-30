@@ -1601,18 +1601,3 @@ body, .topbar, .card, .config-card, .detalhe-card, .form-input, .modal-content {
   background: var(--surface-2);
   color: var(--text);
 }
-
-/* ---------- BADGES DE PERFIL ---------- */
-.perfil-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 99px;
-  font-size: .75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
-.perfil-fiscal        { background: rgba(59,130,246,.15);  color: #3b82f6; }
-.perfil-cco           { background: rgba(168,85,247,.15);  color: #a855f7; }
-.perfil-supervisor    { background: rgba(234,179,8,.15);   color: #ca8a04; }
-.perfil-administrador { background: rgba(34,197,94,.15);   color: #16a34a; }
