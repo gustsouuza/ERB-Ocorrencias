@@ -552,7 +552,7 @@ img { max-width: 100%; display: block; }
 }
 .btn:hover    { transform: translateY(-1px); }
 .btn:active   { transform: translateY(0); }
-.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn:disabled { cursor: not-allowed; transform: none; }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--green-600), var(--green-500));

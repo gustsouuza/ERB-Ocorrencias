@@ -176,14 +176,9 @@ function navegar(pagina, dados) {
   // Controle de acesso por perfil
   var perfil = ERB.usuario ? ERB.usuario.perfil : '';
   var isFiscal = perfil === 'fiscal';
-  var isAdmin  = perfil === 'administrador';
-  var paginasRestritasFiscal = ['dashboard','ocorrencias','relatorios','admin','configuracoes','logs'];
-  var paginasRestritasNaoAdmin = ['admin'];
-  if (!isAdmin && paginasRestritasNaoAdmin.indexOf(pagina) !== -1) {
-    showToast('Acesso restrito a administradores', 'error');
-    return;
-  }
-  if (isFiscal && paginasRestritasFiscal.indexOf(pagina) !== -1) {
+  var isSuper  = perfil === 'administrador' || perfil === 'supervisor' || perfil === 'cco';
+  var paginasRestritas = ['dashboard','ocorrencias','relatorios','admin','configuracoes','logs'];
+  if (isFiscal && paginasRestritas.indexOf(pagina) !== -1) {
     showToast('Acesso não permitido para o seu perfil', 'error');
     return;
   }
@@ -269,6 +264,10 @@ function atualizarUIUsuario() {
   if (sRole)   sRole.textContent   = u.perfil || 'Fiscal';
   if (tAvatar) tAvatar.textContent = inicial;
 
+  // Ocultar notificações para fiscal
+  var notifBtn = document.getElementById('notif-btn');
+  if (notifBtn) notifBtn.style.display = u.perfil === 'fiscal' ? 'none' : '';
+
   var isAdmin  = u.perfil === 'administrador';
   var isSuper  = isAdmin || u.perfil === 'supervisor' || u.perfil === 'cco';
   var isFiscal = u.perfil === 'fiscal';
@@ -284,7 +283,7 @@ function atualizarUIUsuario() {
   if (navDashboard)   navDashboard.style.display   = isFiscal ? 'none' : '';
   if (navOcorrencias) navOcorrencias.style.display = isFiscal ? 'none' : '';
   if (navRelatorios)  navRelatorios.style.display  = isFiscal ? 'none' : '';
-  if (navAdmin)       navAdmin.style.display       = isAdmin  ? '' : 'none';
+  if (navAdmin)       navAdmin.style.display       = isSuper  ? '' : 'none';
   if (navLogs)        navLogs.style.display        = isSuper  ? '' : 'none';
   if (navConfig)      navConfig.style.display      = isFiscal ? 'none' : '';
 }
@@ -473,6 +472,7 @@ function markAllRead() {
 }
 
 function checkNotificacoes() {
+  if (ERB.usuario && ERB.usuario.perfil === 'fiscal') return;
   fetch('tables/ocorrencias?limit=500')
     .then(function(r) { return r.json(); })
     .then(function(data) {

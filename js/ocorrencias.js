@@ -579,7 +579,7 @@ function mostrarDetalhes(oc) {
   if (!ativo && oc.status === 'encerrada') return '';
   return '<button onclick="alterarStatus(\'' + oc.id + '\',\'' + s + '\')" ' +
   'class="btn ' + (ativo ? 'btn-primary' : 'btn-secondary') + '" ' +
-  (ativo || oc.status === 'encerrada' ? 'disabled ' : '') +
+  (oc.status === 'encerrada' ? 'disabled ' : '') +
   'style="justify-content:flex-start;gap:10px">' +
     statusBadge(s) +
     (ativo ? '<i class="fas fa-check" style="margin-left:auto;color:var(--green-600)"></i>' : '') +
